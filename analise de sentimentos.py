@@ -64,7 +64,7 @@ yesterday = today - datetime.timedelta(time_to_the_past)
 next_day = yesterday + datetime.timedelta(time_to_the_past)
 
 # Esta variavel realiza a autenticação e a busca dos dados, dentro do prazo de 7 dias
-tweet_cursor = tweepy.Cursor(api.search_tweets, q=search, lang='pt', until = next_day.date(), tweet_mode='extended').items(3000)
+tweet_cursor = tweepy.Cursor(api.search_tweets, q=search, lang='pt', until = next_day.date(), tweet_mode='extended').items(100)
     
 # salva nesta variavel apenas os tweets, pois não precisaremos das outras colunas.
 tweets = [tweet.full_text for tweet in tweet_cursor]
