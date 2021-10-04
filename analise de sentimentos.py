@@ -20,8 +20,6 @@ import matplotlib.pyplot as plt
 import re
 import datetime
 from wordcloud import WordCloud, STOPWORDS
-import nltk
-from nltk.corpus import stopwords
 
 # TOKENS DE AUTENTICAÇÃO
 #
