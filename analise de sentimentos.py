@@ -95,7 +95,7 @@ all_summary = " ".join(s for s in summary)
 stopwords = set(STOPWORDS)
 stopwords.update(["da", "meu", "em", "você", "de", "ao", "os", "se", "foi", "e", "que", "não", "por", "uma", "pelo", "seu", "dos", "sua", "já", "diz"
 , "para", "na", "ou", "das", "como", "nos", "um", "ma", "pode", "há", "pela", "mas", "mais", "estão", "seja", "até", "está", "nas", "tem", "sobre", "tudo",
- "á", "a", "c", "vc", "e", "é", "qual", "foram", "só", "se", "fez", "faz", "ele", "bom", "o", "O", "q", "Q", "á", "a"])
+ "á", "a", "c", "vc", "e", "é", "qual", "foram", "só", "se", "fez", "faz", "ele", "bom", "o", "O", "q", "Q", "á", "a", "à", "são"])
 
 
 #############################
