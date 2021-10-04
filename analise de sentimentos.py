@@ -1,14 +1,27 @@
-# PROJETO INTEGRADOR 5A
-# Alunos: Angelus, Diego de Medeiros, Dyego Pimentel, Vanessa Leite, Ysaque
+# ################################
+#                                #
+#    PROJETO INTEGRADOR 5-A      #
+#                                #
+##################################
+###          Alunos:           ###
+##################################
+# ANGELUS VICTOR SARAIVA BORGES  #
+# DIEGO DE MEDEIROS              #
+# DYEGO LOURENÇO PIMENTEL        #
+# VANESSA PEREIRA LEITE          #
+# YSAQUE ARAUJO                  #
+##################################
 
 #  IMPORTAÇÃO DAS BIBLIOTECAS NECESSÁRIAS
 import tweepy
 import textblob
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import re
 import datetime
+from wordcloud import WordCloud, STOPWORDS
+import nltk
+from nltk.corpus import stopwords
 
 # TOKENS DE AUTENTICAÇÃO
 #
@@ -39,38 +52,50 @@ api = tweepy.API(authenticator, wait_on_rate_limit=True)
 # VARIAVEIS DE BUSCA
 termo_pesquisado = 'Covid'
 
+# Selecionamos o termo pesquisado e removemos os retweets.
+search = f'#{termo_pesquisado} -filter:retweets'
 
 # CONFIGURANDO O PERIODO DE BUSCA DE 7 DIAS (PRAZO MÁXIMO UTILIZANDO A API FREE DO TWITTER)
+
 today = datetime.datetime.now()
 today = today.replace(hour=23, minute=59, second=59, microsecond=999999)
 time_to_the_past = 7 # O numero 7 representa q quantidade de dias que desejamos
 yesterday = today - datetime.timedelta(time_to_the_past) 
 next_day = yesterday + datetime.timedelta(time_to_the_past)
 
-
-# Selecionamos o termo pesquisado e removemos os retweets.
-search = f'#{termo_pesquisado} -filter:retweets'
-
 # Esta variavel realiza a autenticação e a busca dos dados, dentro do prazo de 7 dias
-tweet_cursor = tweepy.Cursor(api.search_tweets, q=search, lang='en', until = next_day.date(), tweet_mode='extended').items(100)
-
-
-############################################
-###   PRÉ-PROCESSAMENTO E TRANSFORMAÇÃO  ###
-############################################
-
+tweet_cursor = tweepy.Cursor(api.search_tweets, q=search, lang='pt', until = next_day.date(), tweet_mode='extended').items(3000)
+    
 # salva nesta variavel apenas os tweets, pois não precisaremos das outras colunas.
 tweets = [tweet.full_text for tweet in tweet_cursor]
 
 # Cria o data frame e insere os tweets na coluna Tweets.
 tweets_df = pd.DataFrame(tweets, columns=['Tweets'])
 
+
+############################################
+###   PRÉ-PROCESSAMENTO E TRANSFORMAÇÃO  ###
+############################################
+#
 # Realizamos aqui a limpeza dos dados.
 for _, row in tweets_df.iterrows(): # Para cada linha dentro da base de dados
     row['Tweets'] = re.sub('http\S+', '', row['Tweets']) # Limpa links
     row['Tweets'] = re.sub('#\S+', '', row['Tweets']) # Limpa hashtag
     row['Tweets'] = re.sub('@\S+', '', row['Tweets']) # Limpa os @
     row['Tweets'] = re.sub('\\n', '', row['Tweets']) # Limpa as \
+
+# Unir palavras para fazer o Wordcloud
+summary = tweets_df.dropna(subset=['Tweets'], axis=0)['Tweets']
+
+# concatenar as palavras
+all_summary = " ".join(s for s in summary)
+
+
+# lista de stopword
+stopwords = set(STOPWORDS)
+stopwords.update(["da", "meu", "em", "você", "de", "ao", "os", "se", "foi", "e", "que", "não", "por", "uma", "pelo", "seu", "dos", "sua", "já", "diz"
+, "para", "na", "ou", "das", "como", "nos", "um", "ma", "pode", "há", "pela", "mas", "mais", "estão", "seja", "até", "está", "nas", "tem", "sobre", "tudo",
+ "á", "a", "c", "vc", "e", "é", "qual", "foram", "só", "se", "fez", "faz", "ele", "bom", "o", "O", "q", "Q", "á", "a"])
 
 
 #############################
@@ -85,19 +110,36 @@ tweets_df['Resultado'] = tweets_df['Polaridade'].map(lambda pol: '+' if pol > 0 
 # As variaveis positivo e negativo recebem a soma do resultado dos tweets processados.
 positivo = tweets_df[tweets_df.Resultado == '+'].count()['Tweets']
 negativo = tweets_df[tweets_df.Resultado == '-'].count()['Tweets']
-
-# print(tweets_df)
+# Armazena a quantidade total de tweets analizados.
+total_tweets = positivo + negativo
+#print(tweets_df)
 
 
 #################################
 ###   VISUALIZAÇÃO DOS DADOS  ###
 #################################
 
-# GRÁFICO
-print(positivo)
-plt.bar([0,1], [positivo, negativo], label=['Positivo', 'Negativo'], color=['green', 'red'])
-plt.title('Gráfico de Sentimentos')
-#plt.legend()
-
+# GRÁFICO DE SENTIMENTOS
+plt.bar([0], positivo, label="Positivo %s tweets" % positivo, color=['green'])
+plt.bar([1], negativo, label="Negativo %s tweets" % negativo, color=['Red'])
+plt.title('Gráfico 1 - Sentimentos sobre %s' % termo_pesquisado)
+plt.ylabel('Total de Tweets analisados (%s Tweets)' % total_tweets)
+plt.xlabel('Sentimentos dos tweets')
+plt.legend()
 plt.show()
 
+# NUVEM DE PALAVRAS
+
+# gerar uma wordcloud
+wordcloud = WordCloud(stopwords=stopwords,
+                      background_color="black",
+                      width=1600, height=800).generate(all_summary)
+
+# mostrar a imagem final
+fig, ax = plt.subplots(figsize=(10,6))
+ax.imshow(wordcloud, interpolation='bilinear')
+ax.set_axis_off()
+plt.title('Gráfico 2 - Word Cloud sobre %s' % termo_pesquisado)
+
+plt.imshow(wordcloud)
+plt.show()
